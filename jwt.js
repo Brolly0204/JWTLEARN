@@ -20,12 +20,17 @@ function fromBase64(input) {
   return new Buffer(input, 'base64').toString();
 }
 
-function decode(token, key) {
+function decode(token, secret) {
   let [headerSegment, payloadSegment, signSegment] = token.split('.');
   if (sign([headerSegment, payloadSegment].join('.'), secret) !== signSegment) {
     throw new Error('verify failed');
   }
-  return JSON.parse(fromBase64(payloadSegment));
+  let payload = JSON.parse(fromBase64(payloadSegment));
+  let exp = payload.exp;
+  if (exp && Date.now() / 1000 >= exp) {
+    throw new Error('token expired');
+  }
+  return payload;
 }
 
 module.exports = { encode, decode };
