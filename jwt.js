@@ -22,6 +22,9 @@ function fromBase64(input) {
 
 function decode(token, key) {
   let [headerSegment, payloadSegment, signSegment] = token.split('.');
+  if (sign([headerSegment, payloadSegment].join('.'), secret) !== signSegment) {
+    throw new Error('verify failed');
+  }
   return JSON.parse(fromBase64(payloadSegment));
 }
 
